@@ -1,6 +1,9 @@
 package domain
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
 
 type Error struct {
 	Code    string `json:"code"`
@@ -16,7 +19,8 @@ func WrapError(code, format string, args ...any) error {
 }
 
 func ErrorCode(err error) string {
-	if e, ok := err.(*Error); ok {
+	var e *Error
+	if errors.As(err, &e) {
 		return e.Code
 	}
 	return "internal_error"
