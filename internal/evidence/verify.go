@@ -2,7 +2,6 @@ package evidence
 
 import (
 	"sort"
-	"sync"
 
 	"oralhistory/internal/domain"
 )
@@ -41,18 +40,6 @@ type ManifestQueryResult struct {
 	PublicSegments    []domain.PublicSegment    `json:"public_segments"`
 	ExcludedRanges    []domain.TimeRange        `json:"excluded_ranges"`
 	AudioInstructions []domain.AudioInstruction `json:"audio_instructions"`
-}
-
-var manifestQueryCache = struct {
-	sync.RWMutex
-	results map[string]ManifestQueryResult
-}{results: make(map[string]ManifestQueryResult)}
-
-func manifestQueryCacheKey(manifest *domain.ReleaseManifest) string {
-	if manifest.ManifestSHA256 != "" {
-		return manifest.ManifestSHA256
-	}
-	return manifest.CaseID + "\x00" + manifest.ManifestID
 }
 
 func VerifyManifest(c *domain.OralHistoryCase, manifest *domain.ReleaseManifest, auditRoot string) Verification {
@@ -202,13 +189,6 @@ func QueryManifest(manifest *domain.ReleaseManifest, query ManifestQuery) Manife
 	if manifest == nil {
 		return result
 	}
-	cacheKey := manifestQueryCacheKey(manifest)
-	manifestQueryCache.RLock()
-	cached, ok := manifestQueryCache.results[cacheKey]
-	manifestQueryCache.RUnlock()
-	if ok {
-		return cached
-	}
 	if query.EntryType == "" || query.EntryType == "public" {
 		for _, value := range manifest.PublicSegments {
 			if (query.SegmentID == "" || value.SegmentID == query.SegmentID) && intersects(value.StartMS, value.EndMS, query.StartMS, query.EndMS) {
@@ -237,9 +217,6 @@ func QueryManifest(manifest *domain.ReleaseManifest, query ManifestQuery) Manife
 			result.AudioInstructions = append(result.AudioInstructions, value)
 		}
 	}
-	manifestQueryCache.Lock()
-	manifestQueryCache.results[cacheKey] = result
-	manifestQueryCache.Unlock()
 	return result
 }
 func intersects(start, end int64, queryStart, queryEnd *int64) bool {
