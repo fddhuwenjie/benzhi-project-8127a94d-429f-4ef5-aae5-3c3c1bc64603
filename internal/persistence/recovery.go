@@ -18,7 +18,7 @@ func (s *Store) Recover() error {
 		if entry.IsDir() || !strings.HasSuffix(entry.Name(), ".jsonl") {
 			continue
 		}
-		caseID := strings.TrimSuffix(entry.Name(), ".jsonl")
+		caseID := unescapeName(strings.TrimSuffix(entry.Name(), ".jsonl"))
 		events, err := s.LoadEvents(caseID)
 		if err != nil {
 			return describeEventError(caseID, err)
