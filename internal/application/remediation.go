@@ -117,7 +117,9 @@ func (s *Service) PreviewRemediation(cmd RemediateCommand) (RemediationPreviewRe
 	if err != nil {
 		return RemediationPreviewResult{}, err
 	}
+	s.previewMu.Lock()
 	s.previewResults[key] = preview
+	s.previewMu.Unlock()
 	return RemediationPreviewResult{Revision: c.Revision, Preview: preview}, nil
 }
 
@@ -126,10 +128,12 @@ func (s *Service) remediationPreview(c *domain.OralHistoryCase, cmd RemediateCom
 	if err != nil {
 		return domain.RemediationPreview{}, err
 	}
+	s.previewMu.Lock()
 	preview, ok := s.previewResults[key]
 	if ok {
 		delete(s.previewResults, key)
 	}
+	s.previewMu.Unlock()
 	if ok {
 		return preview, nil
 	}

@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"strings"
+	"sync"
 	"time"
 
 	"oralhistory/internal/domain"
@@ -16,6 +17,7 @@ type Service struct {
 	store          *persistence.Store
 	locks          *caseLocks
 	now            func() time.Time
+	previewMu      sync.Mutex
 	previewResults map[string]domain.RemediationPreview
 }
 
