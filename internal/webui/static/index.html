@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>口述史公开版授权封存台</title>
+  <link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <p class="institution">地方档案馆 · 公开治理</p>
+      <h1>口述史公开版授权封存台</h1>
+    </div>
+    <div id="serviceState" class="service-state">正在连接</div>
+  </header>
+
+  <main class="layout">
+    <aside class="case-nav" aria-label="案件导航">
+      <div class="section-title">
+        <h2>案件</h2>
+        <button id="newCaseButton" class="icon-button" type="button" title="新建案件" aria-label="新建案件">＋</button>
+      </div>
+      <div id="caseList" class="case-list"></div>
+    </aside>
+
+    <section id="emptyState" class="empty-state">
+      <strong>选择一宗案件开始工作</strong>
+      <span>案件状态、授权冲突、复核记录与封存验证会集中显示在此处。</span>
+    </section>
+
+    <section id="workbench" class="workbench hidden" aria-live="polite">
+      <div class="case-heading">
+        <div>
+          <div class="status-row"><span id="caseStatus" class="status"></span><span id="caseRevision"></span></div>
+          <h2 id="caseTitle"></h2>
+          <p id="caseMeta"></p>
+        </div>
+        <button id="refreshButton" class="icon-button" type="button" title="刷新案件" aria-label="刷新案件">↻</button>
+      </div>
+
+      <nav class="tabs" aria-label="案件视图">
+        <button class="tab active" data-tab="register" type="button">登记与约束</button>
+        <button class="tab" data-tab="conflicts" type="button">冲突与整改</button>
+        <button class="tab" data-tab="candidate" type="button">公开版核对</button>
+        <button class="tab" data-tab="review" type="button">复核与封存</button>
+      </nav>
+
+      <div id="register" class="tab-panel active">
+        <section class="band baseline-band">
+          <div><h3>来源与授权基线</h3><p id="baselineInfo"></p></div>
+          <button id="freezeButton" type="button">冻结基线</button>
+        </section>
+        <div class="split">
+          <section>
+            <div class="section-title"><h3>文字片段</h3><div class="button-row"><button id="batchButton" type="button">批量登记</button><button id="addSegmentButton" type="button">登记片段</button></div></div>
+            <div class="table-wrap"><table><thead><tr><th>时间码</th><th>原文</th><th>主体 / 主题</th><th>处置</th></tr></thead><tbody id="segmentRows"></tbody></table></div>
+          </section>
+          <section>
+            <div class="section-title"><h3>授权约束</h3><button id="addConstraintButton" type="button">登记约束</button></div>
+            <div class="table-wrap"><table><thead><tr><th>范围</th><th>策略</th><th>依据</th></tr></thead><tbody id="constraintRows"></tbody></table></div>
+          </section>
+        </div>
+        <section class="matrix-section"><div class="section-title"><h3>授权覆盖矩阵</h3><div id="coverageSummary" class="metric-row"></div></div><div class="table-wrap"><table><thead><tr><th>片段</th><th>范围</th><th>状态</th><th>适用约束</th></tr></thead><tbody id="coverageRows"></tbody></table></div></section>
+      </div>
+
+      <div id="conflicts" class="tab-panel">
+        <section class="band action-band"><div><h3>确定性披露检查</h3><p id="checkSummary">同一输入始终产生相同编号、顺序与结果。</p></div><button id="checkButton" type="button">运行检查</button></section>
+        <div id="checkDelta" class="metric-row"></div>
+        <div id="conflictList" class="conflict-list"></div>
+      </div>
+
+      <div id="candidate" class="tab-panel">
+        <section class="band action-band"><div><h3>候选公开版</h3><p id="candidateDigest">尚未生成</p></div><div class="button-row"><button id="generateButton" type="button">生成只读候选版</button><button id="submitButton" type="button">送交复核</button></div></section>
+        <div id="diffList" class="diff-list"></div>
+        <section><h3>音频处理指令</h3><div id="audioList" class="instruction-list"></div></section>
+      </div>
+
+      <div id="review" class="tab-panel">
+        <section id="reviewActions" class="band action-band"><div><h3>独立复核</h3><p>复核员逐项确认授权依据与遮蔽效果。</p></div><div class="button-row"><button id="returnButton" class="danger" type="button">结构化退回</button><button id="approveButton" type="button">批准并封存</button></div></section>
+        <div id="reviewItems" class="review-items"></div>
+        <section class="split"><div><h3>退回任务</h3><div id="returnTasks" class="plain-list"></div></div><div><h3>本轮候选差异</h3><div id="roundDiff" class="plain-list"></div></div></section>
+        <section class="manifest-section"><h3>封存完整性</h3><div id="verification" class="verification muted">批准后显示校验结果</div></section>
+        <section id="manifestDetails" class="manifest-section hidden"><div class="section-title"><h3>不可变清单范围查询</h3><button id="manifestQueryButton" type="button">查询</button></div><div class="query-row"><input id="manifestStart" type="number" placeholder="开始毫秒"><input id="manifestEnd" type="number" placeholder="结束毫秒"><input id="manifestSegment" type="text" placeholder="片段标识"><select id="manifestType"><option value="">全部类型</option><option value="public">公开</option><option value="excluded">排除</option></select></div><div id="manifestEntries" class="plain-list"></div></section>
+        <section><h3>审计时间线</h3><ol id="timeline" class="timeline"></ol></section>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="formDialog"><form id="dialogForm" method="dialog"><div class="dialog-heading"><h2 id="dialogTitle"></h2><button value="cancel" class="icon-button" aria-label="关闭">×</button></div><div id="dialogFields" class="form-grid"></div><div id="dialogPreview" class="dialog-preview hidden"></div><div id="dialogError" class="form-error" role="alert"></div><div class="dialog-actions"><button value="cancel" class="secondary">取消</button><button id="dialogSubmit" value="default">提交</button></div></form></dialog>
+  <div id="toast" class="toast" role="status"></div>
+  <script src="/static/app.js" defer></script>
+</body>
+</html>
